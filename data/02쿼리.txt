@@ -1,0 +1,53 @@
+CREATE TABLE `user_info` (
+  `reg_no` int unsigned NOT NULL AUTO_INCREMENT,
+  `distance` int NOT NULL DEFAULT '300',
+  `min_age` int NOT NULL DEFAULT '20',
+  `max_age` int NOT NULL DEFAULT '45',
+  `min_height` int NOT NULL DEFAULT '145',
+  `max_height` int NOT NULL DEFAULT '200',
+  PRIMARY KEY (`reg_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=783 DEFAULT CHARSET=utf8mb3 COMMENT='가입자정보';
+
+CREATE TABLE `user_cert` (
+  `reg_no` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_no` int unsigned NOT NULL COMMENT '유저번호',
+  `birth_date` varchar(24) DEFAULT NULL COMMENT '생년월일',
+  `gender` varchar(1) DEFAULT NULL COMMENT '설명',
+  PRIMARY KEY (`reg_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=769 DEFAULT CHARSET=utf8mb3 COMMENT='가입자인증정보';
+
+CREATE TABLE `user_login_info` (
+  `user_no` int unsigned NOT NULL COMMENT '유저 번호',
+  `latitude` float(10,7) DEFAULT NULL COMMENT '위도',
+  `longitude` float(10,7) DEFAULT NULL COMMENT '경도',
+  PRIMARY KEY (`user_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='로그인 위치';
+
+CREATE TABLE `user_profile` (
+  `reg_no` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_no` int unsigned NOT NULL COMMENT '유저번호',
+  `height` varchar(4) DEFAULT NULL COMMENT '키',
+  `body_type` varchar(1) DEFAULT NULL COMMENT '체형',
+  `academic_ability` varchar(1) DEFAULT NULL COMMENT '학력',
+  `religion` varchar(1) DEFAULT NULL COMMENT '종교',
+  `smoking` varchar(1) DEFAULT NULL COMMENT '흡연',
+  `drinking` varchar(1) DEFAULT NULL COMMENT '음주',
+  `self_introduction` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '자기소개',
+  `me_tag` varchar(256) DEFAULT NULL COMMENT 'HashTag',
+  PRIMARY KEY (`reg_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=1284 DEFAULT CHARSET=utf8mb3 COMMENT='가입자 프로필';
+
+CREATE TABLE `user_matching` (
+  `reg_no` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_no` int unsigned NOT NULL DEFAULT '0' COMMENT '유저번호',
+  `rec_user_no` int unsigned NOT NULL DEFAULT '0' COMMENT '소개 유저번호',
+  `reg_date` datetime DEFAULT NULL COMMENT '등록일',
+  `start_date` datetime DEFAULT NULL COMMENT '확인 시작 날짜',
+  `end_date` datetime DEFAULT NULL COMMENT '확인 마지막 날짜',
+  `status` varchar(1) DEFAULT NULL COMMENT '상태 정보',
+  `view` varchar(1) DEFAULT NULL COMMENT '확인 여부',
+  `view_end_date` datetime DEFAULT NULL COMMENT '이력 확인 일',
+  `del_yn` varchar(1) NOT NULL DEFAULT 'N',
+  `del_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`reg_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=556277 DEFAULT CHARSET=utf8mb3 COMMENT='매칭';
