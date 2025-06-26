@@ -151,34 +151,6 @@ total_score = (
 - **Hard Filter**: 나이, 거리 조건 불만족 시 완전 제외
 - **Soft Filter**: 총점 0.5점 이상인 후보자만 선별
 
-## 📚 API 문서
-
-### 주요 클래스 및 함수
-
-#### `SoftFilter` 클래스
-
-```python
-class SoftFilter:
-    def __init__(self, user: pd.Series)
-    def mutualExclusionFilter(self, candidates: pd.DataFrame) -> pd.DataFrame
-    def profileMatchScoreFilter(self, candidates: pd.DataFrame) -> pd.DataFrame
-```
-
-#### 전처리 함수들
-
-```python
-def load_all_csvs(folder_path: str) -> pd.DataFrame
-def hard_filter(user: pd.Series, candidates: pd.DataFrame) -> pd.DataFrame
-def split_by_gender(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]
-```
-
-#### 데이터베이스 유틸리티
-
-```python
-def insert_dataframe_to_user_matching(df_candidates: pd.DataFrame, user_no: int) -> int
-def get_existing_matches(user_no: int) -> list
-```
-
 ## 📁 프로젝트 구조
 
 ```
@@ -202,6 +174,11 @@ MatchMakerProject/
 
 ## 🔧 기술 스택
 
+
+### 파이썬 버전
+
+3.13.5
+
 ### 핵심 라이브러리
 
 - **pandas**: 데이터 처리 및 분석
@@ -217,66 +194,4 @@ MatchMakerProject/
 ### 데이터 처리
 
 - **CSV 기반**: 가벼운 데이터 저장 및 처리
-- **DataFrame**: 효율적인 테이블 데이터 조작
-
-## 🎯 사용 예시
-
-### 기본 매칭 실행
-
-```python
-import preprocess
-from soft_filter import SoftFilter
-from db_util import insert_dataframe_to_user_matching
-
-# 데이터 로드 및 전처리
-df = preprocess.load_all_csvs("../data")
-df = preprocess.add_age_column(df)
-female_df, male_df = preprocess.split_by_gender(df)
-
-# 여성 사용자에 대한 매칭
-for _, user in female_df.iterrows():
-    # 1차 필터링 (Hard Filter)
-    candidates = preprocess.hard_filter(user, male_df)
-  
-    # 2차 필터링 (Soft Filter)
-    soft_filter = SoftFilter(user)
-    candidates = soft_filter.mutualExclusionFilter(candidates)
-    final_candidates = soft_filter.profileMatchScoreFilter(candidates)
-  
-    # 결과 저장
-    insert_dataframe_to_user_matching(final_candidates, user.user_no)
-```
-
-## 📈 성능 최적화
-
-### 처리 속도 개선
-
-- **벡터화 연산**: pandas 기반 효율적 데이터 처리
-- **중복 제거**: 이미 매칭된 사용자 사전 필터링
-- **배치 처리**: 다중 사용자 동시 처리
-
-### 메모리 최적화
-
-- **지연 로딩**: 필요한 데이터만 메모리에 로드
-- **가비지 컬렉션**: 불필요한 객체 자동 정리
-
-## 🔮 향후 개선 계획
-
-- [ ] **실시간 매칭**: 웹소켓 기반 실시간 업데이트
-- [ ] **추천 시스템**: 협업 필터링 알고리즘 도입
-- [ ] **성능 모니터링**: 매칭 성공률 추적 및 분석
-- [ ] **UI/UX**: 웹 인터페이스 개발
-- [ ] **확장성**: 마이크로서비스 아키텍처 전환
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다.
-
-## 👥 기여자
-
-- 개발팀: MatchMaker Development Team
-- 문의: [연락처 정보]
-
----
-
-💡 **Tip**: 최적의 매칭 결과를 위해 사용자 프로필의 태그 정보를 풍부하게 입력하는 것을 권장합니다!
+- **DataFrame**: 효율적인 테이블 데이터 조작📄 라이선스
