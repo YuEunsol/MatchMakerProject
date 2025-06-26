@@ -14,7 +14,7 @@ def print_df(df):
     pd.set_option('display.width', 1000)  # 줄바꿈 안 되게
     pd.set_option('display.max_colwidth', None)  # 셀 내용 자르지 않게
 
-    print(df)
+    # print(df)
 
 
 def load_all_csvs(folder_path):
@@ -31,8 +31,16 @@ def load_all_csvs(folder_path):
     df = user_cert.merge(user_info, on='reg_no') \
               .merge(user_profile, on='user_no') \
               .merge(user_login_info, on='user_no')
+    
+    # user_profile의 중복데이터로 인해 merge 시 중복데이터가 발생.
+    # user_no 기준으로 중복 데이터 제거 (첫 번째 발견된 데이터만 유지)
+    df = df.drop_duplicates(subset=['user_no'], keep='first')
 
-    # print_df(df)
+    # 명시적으로 컬럼명 변경
+    df = df.rename(columns={
+        'reg_no_x': 'user_info_reg_no',
+        'reg_no_y': 'user_profile_reg_no'
+    })
 
     return df
 
