@@ -40,8 +40,9 @@ class SoftFilter:
             smoking_score = self._calculateSmokingMatchScore(candidate)
             drinking_score = self._calculateDrinkingMatchScore(candidate)
             tag_similarity_score = self._calculateTagSimilarityScore(candidate)
+            
             total_score = body_type_score + academic_score + religion_score + smoking_score + drinking_score + tag_similarity_score
-            if total_score > 0.5:
+            if total_score > 3:
                 filter_candidates.append(candidate)
 
         return pd.DataFrame(filter_candidates)
@@ -77,10 +78,11 @@ class SoftFilter:
         """
             흡연 점수 계산
         """
-        max_distance = 5
-        distance = abs(self.user.smoking - candidate.smoking)
-        score = 1.0 - (distance / max_distance)
-        return score
+        if self.user.smoking == candidate.smoking:
+            return 1.0
+        else:
+            return 0.0
+        
 
     def _calculateDrinkingMatchScore(self,candidate: pd.Series) -> float:
         """

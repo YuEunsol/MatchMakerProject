@@ -28,13 +28,14 @@ def load_all_csvs(folder_path):
     user_profile = pd.read_csv(os.path.join(folder_path, "user_profile.csv"))
     user_login_info = pd.read_csv(os.path.join(folder_path, "user_login_info.csv"))
 
+    # user_profile을 reg_no 기준으로 내림차순 정렬 (최신 프로필이 먼저 오도록)
+    user_profile = user_profile.sort_values('reg_no', ascending=False)
+    # user_no별로 중복 제거 (keep='first'로 가장 큰 reg_no, 즉 최신 프로필만 유지)
+    user_profile = user_profile.drop_duplicates(subset=['user_no'], keep='first')
+
     df = user_cert.merge(user_info, on='reg_no') \
               .merge(user_profile, on='user_no') \
               .merge(user_login_info, on='user_no')
-    
-    # user_profile의 중복데이터로 인해 merge 시 중복데이터가 발생.
-    # user_no 기준으로 중복 데이터 제거 (첫 번째 발견된 데이터만 유지)
-    df = df.drop_duplicates(subset=['user_no'], keep='first')
 
     # 명시적으로 컬럼명 변경
     df = df.rename(columns={
