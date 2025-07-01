@@ -48,8 +48,8 @@ def load_all_csvs(folder_path):
 def load_matching_csv(folder_path):
     """
     user_matching 테이블 가져오기
-    :param folder_path: csv 파일이 있는 폴더 경로
-    :return matching_df: user_matching 테이블
+    현재 파일의 절대 경로를 읽어 '../data'에서 가져옴
+    :return:
     """
     return pd.read_csv(os.path.join(folder_path, "user_matching.csv"))
 
