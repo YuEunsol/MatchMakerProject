@@ -1,6 +1,9 @@
 import pandas as pd
 from preprocess import load_matching_csv
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
 
 class SoftFilter:
     def __init__(self,user: pd.Series,model: SentenceTransformer, data_dir: str, mode: str):
@@ -39,26 +42,33 @@ class SoftFilter:
         :return:
         """
         filter_candidates = []
-        
-        for _,candidate in candidates.iterrows():
+
+        for _, candidate in candidates.iterrows():
             if mode == "mutual":
                 score_ab = self._calculate_total_score(self.user, candidate)
                 score_ba = self._calculate_total_score(candidate, self.user)
-                total_score = (score_ab + score_ba) / 2
+
+                if score_ab > 3 and score_ba > 3:
+                    total_score = (score_ab + score_ba) / 2
+                else:
+                    continue
+
                 print(
                     f"[mutual] {self.user.user_no} ↔ {candidate.user_no}: A→B={score_ab:.3f}, B→A={score_ba:.3f}, Total={total_score:.3f}")
 
             else:
                 score_ab = self._calculate_total_score(self.user, candidate)
                 score_ba = None
-                total_score = score_ab
+                if score_ab > 3:
+                    total_score = score_ab
+                else:
+                    continue
 
-            if total_score > 3:
-                candidate_dict = candidate.to_dict()
-                candidate_dict["score_a_to_b"] = round(score_ab, 3) if score_ab is not None else None
-                candidate_dict["score_b_to_a"] = round(score_ba, 3) if score_ba is not None else None
-                candidate_dict["total_score"] = round(total_score, 3) if total_score is not None else None
-                filter_candidates.append(candidate_dict)
+            candidate_dict = candidate.to_dict()
+            candidate_dict["score_a_to_b"] = round(score_ab, 3) if score_ab is not None else None
+            candidate_dict["score_b_to_a"] = round(score_ba, 3) if score_ba is not None else None
+            candidate_dict["total_score"] = round(total_score, 3)
+            filter_candidates.append(candidate_dict)
 
         if not filter_candidates:
             return pd.DataFrame(columns=list(candidates.columns) + ["score_a_to_b", "score_b_to_a", "total_score"])
@@ -116,24 +126,22 @@ class SoftFilter:
         """
             태그 유사도 점수 계산
         """
-        
-        user_tags = user.me_tag.split("#")[1:]  # 첫 번째 빈 문자열 제거
+
+        user_tags = user.me_tag.split("#")[1:]
         candidate_tags = candidate.me_tag.split("#")[1:]
 
-        # 태그가 없는 경우 처리
         if not user_tags or not candidate_tags:
             return 0.0
 
         user_embedding = self.model.encode(user_tags)
         candidate_embedding = self.model.encode(candidate_tags)
 
-        # 유사도 매트릭스 계산
-        similarity_matrix = self.model.similarity(user_embedding, candidate_embedding)
-        
-        # 평균값 방식: 모든 유사도의 평균
-        avg_similarity = float(similarity_matrix.mean())
-        
-        return avg_similarity
+        sim_matrix = cosine_similarity(user_embedding, candidate_embedding)
+        # user 태그 기준으로 가장 유사한 candidate 태그 하나씩만 고름
+        max_similarities = sim_matrix.max(axis=1)
+        avg_max_similarity = float(np.mean(max_similarities))
+
+        return avg_max_similarity
 
     def _calculate_total_score(self, user: pd.Series, candidate: pd.Series) -> float:
         body_type_score = self._calculateBodyTypeMatchScore(user, candidate)
