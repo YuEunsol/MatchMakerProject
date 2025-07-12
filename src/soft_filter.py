@@ -45,9 +45,11 @@ class SoftFilter:
 
         for _, candidate in candidates.iterrows():
             if mode == "mutual":
+                # user_profile column 데이터를 기반으로 스코어링 (자세한 로직은 수도 코드의 soft_filter 참조)
                 score_ab = self._calculate_total_score(self.user, candidate)
                 score_ba = self._calculate_total_score(candidate, self.user)
 
+                # 스코어가 3 이상인 경우만 통과
                 if score_ab > 3 and score_ba > 3:
                     total_score = (score_ab + score_ba) / 2
                 else:
@@ -57,8 +59,10 @@ class SoftFilter:
                     f"[mutual] {self.user.user_no} ↔ {candidate.user_no}: A→B={score_ab:.3f}, B→A={score_ba:.3f}, Total={total_score:.3f}")
 
             else:
+                # user_profile column 데이터를 기반으로 스코어링 (자세한 로직은 수도 코드의 soft_filter 참조)
                 score_ab = self._calculate_total_score(self.user, candidate)
                 score_ba = None
+                # 스코어가 3 이상인 경우만 통과
                 if score_ab > 3:
                     total_score = score_ab
                 else:
@@ -144,6 +148,9 @@ class SoftFilter:
         return avg_max_similarity
 
     def _calculate_total_score(self, user: pd.Series, candidate: pd.Series) -> float:
+        """
+            총 점수 계산
+        """
         body_type_score = self._calculateBodyTypeMatchScore(user, candidate)
         academic_score = self._calculateAcademicMatchScore(user, candidate)
         religion_score = self._calcluateReligionMatchScore(user, candidate)
