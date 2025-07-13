@@ -15,6 +15,10 @@ class SoftFilter:
     def mutualExclusionFilter(self, candidates: pd.DataFrame) -> pd.DataFrame:
         """
             이미 매칭된 유저를 제외합니다.
+            args:
+                candidates: 후보군 데이터프레임
+            return:
+                not_recommended_candidates: 이미 매칭된 유저를 제외한 후보군 데이터프레임
         """
         user_no = self.user.user_no
         not_recommended_candidates =[]
@@ -39,15 +43,17 @@ class SoftFilter:
         :param mode: 스코어링 모드
             - mode="single" : 단일 스코어링. self.user → candidate 기준 단방향
             - mode="mutual" : 쌍방 스코어링.
-        :return:
+        :return: 스코어링 후 필터링된 후보군 데이터프레임
         """
         filter_candidates = []
 
         for _, candidate in candidates.iterrows():
             if mode == "mutual":
+                # user_profile column 데이터를 기반으로 스코어링 (자세한 로직은 수도 코드의 soft_filter 참조)
                 score_ab = self._calculate_total_score(self.user, candidate)
                 score_ba = self._calculate_total_score(candidate, self.user)
 
+                # 스코어가 3 이상인 경우만 통과
                 if score_ab > 3 and score_ba > 3:
                     total_score = (score_ab + score_ba) / 2
                 else:
@@ -57,8 +63,10 @@ class SoftFilter:
                     f"[mutual] {self.user.user_no} ↔ {candidate.user_no}: A→B={score_ab:.3f}, B→A={score_ba:.3f}, Total={total_score:.3f}")
 
             else:
+                # user_profile column 데이터를 기반으로 스코어링 (자세한 로직은 수도 코드의 soft_filter 참조)
                 score_ab = self._calculate_total_score(self.user, candidate)
                 score_ba = None
+                # 스코어가 3 이상인 경우만 통과
                 if score_ab > 3:
                     total_score = score_ab
                 else:
@@ -79,6 +87,11 @@ class SoftFilter:
     def _calculateBodyTypeMatchScore(self, user: pd.Series, candidate: pd.Series) -> float:
         """
             체형 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                체형 점수
         """
         max_distance = 6
         distance = abs(user.body_type - candidate.body_type)
@@ -88,6 +101,11 @@ class SoftFilter:
     def _calculateAcademicMatchScore(self, user: pd.Series, candidate: pd.Series) -> float:
         """
             학력 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                학력 점수
         """
         max_distance = 5
         distance = abs(user.academic_ability - candidate.academic_ability)
@@ -97,6 +115,11 @@ class SoftFilter:
     def _calcluateReligionMatchScore(self, user: pd.Series, candidate: pd.Series) -> float:
         """
             종교 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                종교 점수
         """
         max_distance = 5
         distance = abs(user.religion - candidate.religion)
@@ -106,6 +129,11 @@ class SoftFilter:
     def _calculateSmokingMatchScore(self, user: pd.Series, candidate: pd.Series) -> float:
         """
             흡연 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                흡연 점수
         """
         if user.smoking == candidate.smoking:
             return 1.0
@@ -116,6 +144,11 @@ class SoftFilter:
     def _calculateDrinkingMatchScore(self, user: pd.Series, candidate: pd.Series) -> float:
         """
             음주 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                음주 점수
         """
         max_distance = 4
         distance = abs(user.drinking - candidate.drinking)
@@ -125,6 +158,11 @@ class SoftFilter:
     def _calculateTagSimilarityScore(self, user: pd.Series, candidate: pd.Series) -> float:
         """
             태그 유사도 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                태그 유사도 점수
         """
 
         user_tags = user.me_tag.split("#")[1:]
@@ -144,6 +182,14 @@ class SoftFilter:
         return avg_max_similarity
 
     def _calculate_total_score(self, user: pd.Series, candidate: pd.Series) -> float:
+        """
+            총 점수 계산
+            args:
+                user: 유저 데이터 열
+                candidate: 후보군 데이터프레임
+            return:
+                총 점수
+        """
         body_type_score = self._calculateBodyTypeMatchScore(user, candidate)
         academic_score = self._calculateAcademicMatchScore(user, candidate)
         religion_score = self._calcluateReligionMatchScore(user, candidate)
