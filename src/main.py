@@ -4,7 +4,6 @@ import preprocess
 import pandas as pd
 from soft_filter import SoftFilter
 from db_util import insert_dataframe_to_user_matching
-from sentence_transformers import SentenceTransformer
 
 if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,9 +17,6 @@ if __name__ == '__main__':
     # 남/여를 기준으로 데이터 프레임 분리
     female_df, male_df = preprocess.split_by_gender(df)
 
-    # 모델 로드
-    model = SentenceTransformer("jhgan/ko-sroberta-multitask")
-
     # 매칭 시작
     for score_mode in ["single", "mutual"]:
         print(f"\n===== [{score_mode.upper()}] 매칭 시작 =====")
@@ -30,7 +26,7 @@ if __name__ == '__main__':
             # user_info 이상형 기준으로 필터링 (자세한 로직은 수도 코드의 hard_filter 참조)
             filtered_df = preprocess.hard_filter(user, male_df)
             # user_profile 기준으로 스코어링하여 필터링 클래스로 부터 인스턴스 생성 (자세한 로직은 수도 코드의 soft_filter 참조)
-            soft_filter = SoftFilter(user, model, data_dir, mode=score_mode)
+            soft_filter = SoftFilter(user,data_dir, mode=score_mode)
             # user_matching 테이블에 존재하는 이미 매칭된 유저를 후보군에서 제외합니다.
             filtered_df = soft_filter.mutualExclusionFilter(filtered_df)
             # 프로필 스코어링 후 필터링 (자세한 로직은 수도 코드의 soft_filter 참조)
@@ -43,7 +39,7 @@ if __name__ == '__main__':
             # user_info 이상형 기준으로 필터링 (자세한 로직은 수도 코드의 hard_filter 참조)
             filtered_df = preprocess.hard_filter(user, female_df)
             # user_profile 기준으로 스코어링하여 필터링 클래스로 부터 인스턴스 생성 (자세한 로직은 수도 코드의 soft_filter 참조)
-            soft_filter = SoftFilter(user, model, data_dir, mode=score_mode)
+            soft_filter = SoftFilter(user,data_dir, mode=score_mode)
             # user_matching 테이블에 존재하는 이미 매칭된 유저를 후보군에서 제외합니다.
             filtered_df = soft_filter.mutualExclusionFilter(filtered_df)
             # 프로필 스코어링 후 필터링 (자세한 로직은 수도 코드의 soft_filter 참조)
